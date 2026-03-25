@@ -1,26 +1,23 @@
-# EduLearn - AI Tutor System
+# EduLearn
 
 ## Current State
-EduLearn has 4 subjects (Math, Biology, Chemistry, Physics) with quizzes, flashcards, and progress tracking. No AI features exist.
+App has 4 subjects (Mathematics, Biology, Chemistry, Physics). Quiz question counts are low: Math (6), Biology (6), Chemistry (4), Physics (4). Backend initializes all data in `initialize()`.
 
 ## Requested Changes (Diff)
 
 ### Add
-- AI Tutor chat widget: floating button on all pages opens a chat panel
-- Backend `askAITutor(question: Text, subject: Text) : async Text` using HTTP outcalls to an AI API
-- AI Tutor answers subject-related questions, explains quiz answers, and helps with flashcard concepts
-- Smart study suggestions based on the subject context
+- Additional quiz questions for all four subjects, bringing each to 10 questions
 
 ### Modify
-- App.tsx: add AI Tutor chat widget
-- QuizModal: add "Ask AI Tutor" button after an answer is revealed
+- `initialize()` in `main.mo` to include expanded question arrays
+- `quizCount` on each subject to reflect actual question counts
 
 ### Remove
 - Nothing
 
 ## Implementation Plan
-1. Select http-outcalls component
-2. Add `askAITutor` Motoko endpoint using HTTP outcall to AI API
-3. Add AIChatWidget frontend component (floating button + chat panel)
-4. Wire "Ask AI Tutor" button in QuizModal for explanation help
-5. Add AI Tutor button in App.tsx
+1. Add 4 more questions to Mathematics (bring to 10)
+2. Add 4 more questions to Biology (bring to 10)
+3. Add 6 more questions to Chemistry (bring to 10)
+4. Add 6 more questions to Physics (bring to 10)
+5. Update quizCount fields on all subjects to 10
