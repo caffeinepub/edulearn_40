@@ -2,8 +2,11 @@ import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
+import OutCall "http-outcalls/outcall";
+import Migration "migration";
 import Order "mo:core/Order";
 
+(with migration = Migration.run)
 actor {
   type Subject = {
     id : Nat;
@@ -64,6 +67,10 @@ actor {
   let flashcardDecks = Map.empty<Nat, [FlashcardDeck]>();
   let userProgress = Map.empty<Principal, UserProgress>();
   let flashcards = Map.empty<Nat, [Flashcard]>();
+
+  public query ({ caller }) func transform(input : OutCall.TransformationInput) : async OutCall.TransformationOutput {
+    OutCall.transform(input);
+  };
 
   public shared ({ caller }) func initialize() : async () {
     subjects.add(1, { id = 1; title = "Mathematics"; description = "Master numbers, algebra, geometry, and problem-solving"; iconName = "mathematics"; quizCount = 10 });
@@ -210,5 +217,27 @@ actor {
 
   public query ({ caller }) func getUserProgress() : async ?UserProgress {
     userProgress.get(caller);
+  };
+
+  let openAIApiKey = "YOUR_OPENAI_API_KEY";
+  public shared ({ caller }) func askAITutor(question : Text, subject : Text, context : Text) : async Text {
+    let systemPrompt = "You are an expert educational tutor. Answer questions clearly and concisely for students.\n\nSubject: " # subject # "\nContext: " # context;
+    let userPrompt = "Question: " # question;
+    let payload = "{ \"model\": \"gpt-3.5-turbo\", \"messages\": [{\"role\": \"system\", \"content\": \"" # systemPrompt # "\"}, {\"role\": \"user\", \"content\": \"" # userPrompt # "\"}], \"temperature\": 0.7 }";
+    let headers : [OutCall.Header] = [
+      { name = "Content-Type"; value = "application/json" },
+      { name = "Authorization"; value = "Bearer " # openAIApiKey },
+    ];
+    try {
+      let response = await OutCall.httpPostRequest(
+        "https://api.openai.com/v1/chat/completions",
+        headers,
+        payload,
+        transform,
+      );
+      response;
+    } catch (err) {
+      "Sorry, our AI Tutor is currently unavailable. Please try again later or rephrase your question.";
+    };
   };
 };

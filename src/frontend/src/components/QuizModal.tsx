@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckCircle2, Trophy, XCircle } from "lucide-react";
+import { CheckCircle2, MessageCircle, Trophy, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useQuizQuestions, useSubmitQuizResult } from "../hooks/useQueries";
 
@@ -15,9 +15,10 @@ const OPTION_SKELETON_KEYS = ["sk-opt-1", "sk-opt-2", "sk-opt-3", "sk-opt-4"];
 interface Props {
   subjectId: bigint;
   onClose: () => void;
+  onAskAI?: (question: string) => void;
 }
 
-export default function QuizModal({ subjectId, onClose }: Props) {
+export default function QuizModal({ subjectId, onClose, onAskAI }: Props) {
   const { data: questions, isLoading } = useQuizQuestions(subjectId);
   const submitResult = useSubmitQuizResult();
 
@@ -51,6 +52,12 @@ export default function QuizModal({ subjectId, onClose }: Props) {
       setCurrentIdx((i) => i + 1);
       setSelected(null);
       setAnswered(false);
+    }
+  };
+
+  const handleAskAI = () => {
+    if (q && onAskAI) {
+      onAskAI(q.question);
     }
   };
 
@@ -171,6 +178,18 @@ export default function QuizModal({ subjectId, onClose }: Props) {
                   <strong>Explanation:</strong> {q.explanation}
                 </p>
               </div>
+            )}
+            {answered && onAskAI && (
+              <Button
+                data-ocid="quiz.ask_ai.button"
+                variant="outline"
+                onClick={handleAskAI}
+                className="w-full flex items-center gap-2 text-sm"
+                style={{ borderColor: "#2D7EF7", color: "#2D7EF7" }}
+              >
+                <MessageCircle className="w-4 h-4" />
+                Ask AI Tutor about this question
+              </Button>
             )}
             {answered && (
               <Button

@@ -89,6 +89,27 @@ export class ExternalBlob {
         return this;
     }
 }
+export interface http_request_result {
+    status: bigint;
+    body: Uint8Array;
+    headers: Array<http_header>;
+}
+export interface TransformationOutput {
+    status: bigint;
+    body: Uint8Array;
+    headers: Array<http_header>;
+}
+export interface TransformationInput {
+    context: Uint8Array;
+    response: http_request_result;
+}
+export interface QuizQuestion {
+    id: bigint;
+    question: string;
+    explanation: string;
+    correctAnswer: bigint;
+    options: Array<string>;
+}
 export interface FlashcardDeck {
     id: bigint;
     title: string;
@@ -105,12 +126,6 @@ export interface QuizResult {
     totalQuestions: bigint;
     subjectId: bigint;
 }
-export interface UserProgress {
-    completedQuizzes: bigint;
-    streakDays: bigint;
-    dailyActivity: Array<bigint>;
-    accuracy: bigint;
-}
 export interface Subject {
     id: bigint;
     title: string;
@@ -118,14 +133,18 @@ export interface Subject {
     iconName: string;
     quizCount: bigint;
 }
-export interface QuizQuestion {
-    id: bigint;
-    question: string;
-    explanation: string;
-    correctAnswer: bigint;
-    options: Array<string>;
+export interface UserProgress {
+    completedQuizzes: bigint;
+    streakDays: bigint;
+    dailyActivity: Array<bigint>;
+    accuracy: bigint;
+}
+export interface http_header {
+    value: string;
+    name: string;
 }
 export interface backendInterface {
+    askAITutor(question: string, subject: string, context: string): Promise<string>;
     getFlashcardDecks(subjectId: bigint): Promise<Array<FlashcardDeck>>;
     getFlashcards(deckId: bigint): Promise<Array<Flashcard>>;
     getQuizQuestions(subjectId: bigint): Promise<Array<QuizQuestion>>;
@@ -134,10 +153,25 @@ export interface backendInterface {
     initialize(): Promise<void>;
     startFlashcardAttempt(deckId: bigint, cardId: bigint): Promise<boolean>;
     submitQuizResult(result: QuizResult): Promise<boolean>;
+    transform(input: TransformationInput): Promise<TransformationOutput>;
 }
 import type { UserProgress as _UserProgress } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
+    async askAITutor(arg0: string, arg1: string, arg2: string): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.askAITutor(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.askAITutor(arg0, arg1, arg2);
+            return result;
+        }
+    }
     async getFlashcardDecks(arg0: bigint): Promise<Array<FlashcardDeck>> {
         if (this.processError) {
             try {
@@ -247,6 +281,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.submitQuizResult(arg0);
+            return result;
+        }
+    }
+    async transform(arg0: TransformationInput): Promise<TransformationOutput> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.transform(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.transform(arg0);
             return result;
         }
     }

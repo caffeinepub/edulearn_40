@@ -44,8 +44,27 @@ export const QuizResult = IDL.Record({
   'totalQuestions' : IDL.Nat,
   'subjectId' : IDL.Nat,
 });
+export const http_header = IDL.Record({
+  'value' : IDL.Text,
+  'name' : IDL.Text,
+});
+export const http_request_result = IDL.Record({
+  'status' : IDL.Nat,
+  'body' : IDL.Vec(IDL.Nat8),
+  'headers' : IDL.Vec(http_header),
+});
+export const TransformationInput = IDL.Record({
+  'context' : IDL.Vec(IDL.Nat8),
+  'response' : http_request_result,
+});
+export const TransformationOutput = IDL.Record({
+  'status' : IDL.Nat,
+  'body' : IDL.Vec(IDL.Nat8),
+  'headers' : IDL.Vec(http_header),
+});
 
 export const idlService = IDL.Service({
+  'askAITutor' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
   'getFlashcardDecks' : IDL.Func(
       [IDL.Nat],
       [IDL.Vec(FlashcardDeck)],
@@ -58,6 +77,11 @@ export const idlService = IDL.Service({
   'initialize' : IDL.Func([], [], []),
   'startFlashcardAttempt' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Bool], []),
   'submitQuizResult' : IDL.Func([QuizResult], [IDL.Bool], []),
+  'transform' : IDL.Func(
+      [TransformationInput],
+      [TransformationOutput],
+      ['query'],
+    ),
 });
 
 export const idlInitArgs = [];
@@ -99,8 +123,24 @@ export const idlFactory = ({ IDL }) => {
     'totalQuestions' : IDL.Nat,
     'subjectId' : IDL.Nat,
   });
+  const http_header = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
+  const http_request_result = IDL.Record({
+    'status' : IDL.Nat,
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(http_header),
+  });
+  const TransformationInput = IDL.Record({
+    'context' : IDL.Vec(IDL.Nat8),
+    'response' : http_request_result,
+  });
+  const TransformationOutput = IDL.Record({
+    'status' : IDL.Nat,
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(http_header),
+  });
   
   return IDL.Service({
+    'askAITutor' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
     'getFlashcardDecks' : IDL.Func(
         [IDL.Nat],
         [IDL.Vec(FlashcardDeck)],
@@ -117,6 +157,11 @@ export const idlFactory = ({ IDL }) => {
     'initialize' : IDL.Func([], [], []),
     'startFlashcardAttempt' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Bool], []),
     'submitQuizResult' : IDL.Func([QuizResult], [IDL.Bool], []),
+    'transform' : IDL.Func(
+        [TransformationInput],
+        [TransformationOutput],
+        ['query'],
+      ),
   });
 };
 
